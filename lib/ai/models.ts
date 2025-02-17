@@ -1,4 +1,4 @@
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI, openai} from '@ai-sdk/openai';
 import { fireworks } from '@ai-sdk/fireworks';
 import {
   customProvider,
@@ -8,14 +8,15 @@ import {
 
 export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';
 
+const copilot = createOpenAI({
+  baseURL: process.env.ETENDO_BASE_URL
+})
+
 export const myProvider = customProvider({
   languageModels: {
-    'chat-model-small': openai('gpt-4o-mini'),
+    'chat-model-small': copilot('o3-mini'),
     'chat-model-large': openai('gpt-4o'),
-    'chat-model-reasoning': wrapLanguageModel({
-      model: fireworks('accounts/fireworks/models/deepseek-r1'),
-      middleware: extractReasoningMiddleware({ tagName: 'think' }),
-    }),
+    'chat-model-reasoning': openai('o3-mini'),
     'title-model': openai('gpt-4-turbo'),
     'block-model': openai('gpt-4o-mini'),
   },
@@ -34,8 +35,8 @@ interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model-small',
-    name: 'Small model',
-    description: 'Small model for fast, lightweight tasks',
+    name: 'Etendo Copilot',
+    description: 'Etendo declared model'
   },
   {
     id: 'chat-model-large',
@@ -48,3 +49,4 @@ export const chatModels: Array<ChatModel> = [
     description: 'Uses advanced reasoning',
   },
 ];
+
