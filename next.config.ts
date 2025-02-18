@@ -7,9 +7,13 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'https://ui.ai.labs.etendo.cloud'
+        hostname: 'avatar.vercel.sh'
       },
     ],
+  },
+  env: {
+    NEXT_PUBLIC_ETENDO_URL: process.env.ETENDO_URL,
+    NEXT_PUBLIC_ETENDO_JWT_TOKEN: process.env.ETENDO_JWT_TOKEN,
   },
 };
 
