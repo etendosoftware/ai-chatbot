@@ -3,7 +3,7 @@
 import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useMemo, useState } from 'react';
+import { memo, useState } from 'react';
 
 import type { Vote } from '@/lib/db/schema';
 
@@ -49,13 +49,15 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
+  const displayRole = message.role.toLowerCase();
+
   return (
     <AnimatePresence>
       <motion.div
         className="w-full mx-auto max-w-3xl px-4 group/message"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        data-role={message.role}
+        data-role={displayRole}
       >
         <div
           className={cn(
@@ -66,7 +68,7 @@ const PurePreviewMessage = ({
             },
           )}
         >
-          {message.role === 'assistant' && (
+          {displayRole === 'assistant' && (
             <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
@@ -95,7 +97,7 @@ const PurePreviewMessage = ({
 
             {(message.content || message.reasoning) && mode === 'view' && (
               <div className="flex flex-row gap-2 items-start">
-                {message.role === 'user' && !isReadonly && (
+                {displayRole === 'user' && !isReadonly && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -115,7 +117,7 @@ const PurePreviewMessage = ({
                 <div
                   className={cn('flex flex-col gap-4', {
                     'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
-                      message.role === 'user',
+                      displayRole === 'user',
                   })}
                 >
                   <Markdown>{message.content as string}</Markdown>

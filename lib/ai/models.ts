@@ -8,7 +8,7 @@ import {
 export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';
 
 const copilot = createOpenAI({
-  baseURL: process.env.ETENDO_BASE_URL
+  baseURL: process.env.ETENDO_URL_COPILOT + '/openai/v1'
 })
 
 export const myProvider = customProvider({

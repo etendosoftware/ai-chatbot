@@ -10,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { fetchChatModelsFromBackend } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
 import { ChatModel } from '@/utils/types';
 
@@ -19,8 +18,11 @@ import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 export function ModelSelector({
   selectedModelId,
   className,
+  disabled = false,
 }: {
   selectedModelId: string;
+  className?: string;
+  disabled?: boolean;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
   const [chatModels, setChatModels] = useState<ChatModel[]>([]);
@@ -29,7 +31,14 @@ export function ModelSelector({
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const modelsData = await fetchChatModelsFromBackend();
+        const response = await fetch('/api/chat-models', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch models');
+        }
+        const modelsData = await response.json();
         const mappedModels = modelsData.map((model: ChatModel) => ({
           ...model,
           id: model.app_id,
@@ -57,7 +66,11 @@ export function ModelSelector({
           className,
         )}
       >
-        <Button variant="outline" className="md:px-2 md:h-[34px]">
+        <Button
+          variant="outline"
+          className="md:px-2 md:h-[34px]"
+          disabled={disabled}
+        >
           {selectedChatModel?.name}
           <ChevronDownIcon />
         </Button>
