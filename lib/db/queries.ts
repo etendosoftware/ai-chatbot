@@ -4,6 +4,7 @@ import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { auth } from '@/app/(auth)/auth';
 
 import {
   user,
@@ -17,6 +18,7 @@ import {
   vote,
 } from './schema';
 import { BlockKind } from '@/components/block';
+import { generateShortUUID } from '../utils';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -56,37 +58,47 @@ export async function saveChat({
   userId: string;
   title: string;
 }) {
+  const session = await auth();
+  if (!session || !session.user) {
+    throw new Error('No authenticated session found');
+  }
+
   try {
     return await db.insert(chat).values({
       id,
       createdAt: new Date(),
       userId,
       title,
+      clientId: session.user.clientId,
+      orgId: session.user.orgId,
+      createdBy: session.user.id,
+      updatedBy: session.user.id,
     });
   } catch (error) {
-    console.error('Failed to save chat in database');
+    console.error('Failed to save chat in database', error);
     throw error;
   }
 }
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
-    await db.delete(vote).where(eq(vote.chatId, id));
-    await db.delete(message).where(eq(message.chatId, id));
-
-    return await db.delete(chat).where(eq(chat.id, id));
+    return await db.update(chat).set({ visible: 'N' }).where(eq(chat.id, id));
   } catch (error) {
     console.error('Failed to delete chat by id from database');
     throw error;
   }
 }
 
-export async function getChatsByUserId({ id }: { id: string }) {
+export async function getChatsByUserId({ id, visible }: { id: string; visible?: string }) {
   try {
+    const conditions = [eq(chat.userId, id)];
+    if (visible) {
+      conditions.push(eq(chat.visible, visible));
+    }
     return await db
       .select()
       .from(chat)
-      .where(eq(chat.userId, id))
+      .where(conditions.length > 1 ? and(...conditions) : conditions[0])
       .orderBy(desc(chat.createdAt));
   } catch (error) {
     console.error('Failed to get chats by user from database');
@@ -105,8 +117,27 @@ export async function getChatById({ id }: { id: string }) {
 }
 
 export async function saveMessages({ messages }: { messages: Array<Message> }) {
+  const session = await auth();
+  if (!session || !session.user) {
+    throw new Error('No authenticated session found');
+  }
+
+  const shortMessages = messages.map((msg) => {
+    const shortId = (msg.id || generateShortUUID()).slice(0, 32).padEnd(32, '0');
+    const shortChatId = (msg.chatId || '').slice(0, 32).padEnd(32, '0');
+    return {
+      ...msg,
+      id: shortId,
+      chatId: shortChatId,
+      clientId: session.user.clientId,
+      orgId: session.user.orgId,
+      createdBy: session.user.id,
+      updatedBy: session.user.id,
+    };
+  });
+
   try {
-    return await db.insert(message).values(messages);
+    return await db.insert(message).values(shortMessages);
   } catch (error) {
     console.error('Failed to save messages in database', error);
     throw error;
@@ -133,25 +164,63 @@ export async function voteMessage({
 }: {
   chatId: string;
   messageId: string;
-  type: 'up' | 'down';
+  type: 'Y' | 'N';
 }) {
-  try {
-    const [existingVote] = await db
-      .select()
-      .from(vote)
-      .where(and(eq(vote.messageId, messageId)));
+  const session = await auth();
+  if (!session || !session.user) {
+    throw new Error('No authenticated session found');
+  }
 
-    if (existingVote) {
-      return await db
-        .update(vote)
-        .set({ isUpvoted: type === 'up' })
-        .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+  try {
+    const voteId = generateShortUUID();
+
+    const messageExists = await db
+      .select({ id: message.id })
+      .from(message)
+      .where(eq(message.id, messageId))
+      .limit(1);
+
+    if (messageExists.length === 0) {
+      throw new Error(`Message with ID ${messageId} does not exist in etcop_message`);
     }
-    return await db.insert(vote).values({
-      chatId,
-      messageId,
-      isUpvoted: type === 'up',
-    });
+
+    const chatExists = await db
+      .select({ id: chat.id })
+      .from(chat)
+      .where(eq(chat.id, chatId))
+      .limit(1);
+
+    if (chatExists.length === 0) {
+      throw new Error(`Chat with ID ${chatId} does not exist in etcop_conversation`);
+    }
+
+    const voteData = {
+      id: voteId,
+      chatId: chatId,
+      messageId: messageId,
+      isUpvoted: type,
+      clientId: session.user.clientId,
+      orgId: session.user.orgId,
+      createdBy: session.user.id,
+      updatedBy: session.user.id,
+      created: new Date(),
+      updated: new Date(),
+      isActive: 'Y',
+    };
+
+    console.log("voteData preparado:", voteData);
+
+    await db
+      .insert(vote)
+      .values(voteData)
+      .onConflictDoUpdate({
+        target: [vote.messageId, vote.chatId],
+        set: {
+          isUpvoted: type,
+          updated: new Date(),
+          updatedBy: session.user.id,
+        },
+      });
   } catch (error) {
     console.error('Failed to upvote message in database', error);
     throw error;

@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useMemo, useOptimistic, useState } from 'react';
+import { startTransition, useMemo, useOptimistic, useState, useEffect } from 'react';
 
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
@@ -10,24 +10,51 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { chatModels } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
+import { ChatModel } from '@/utils/types';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 
 export function ModelSelector({
   selectedModelId,
   className,
+  disabled = false,
 }: {
   selectedModelId: string;
+  className?: string;
+  disabled?: boolean;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+  const [chatModels, setChatModels] = useState<ChatModel[]>([]);
+  const [optimisticModelId, setOptimisticModelId] = useOptimistic(selectedModelId);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await fetch('/api/chat-models', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch models');
+        }
+        const modelsData = await response.json();
+        const mappedModels = modelsData.map((model: ChatModel) => ({
+          ...model,
+          id: model.app_id,
+        }));
+        setChatModels(mappedModels);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchModels();
+  }, []);
 
   const selectedChatModel = useMemo(
     () => chatModels.find((chatModel) => chatModel.id === optimisticModelId),
-    [optimisticModelId],
+    [optimisticModelId, chatModels],
   );
 
   return (
@@ -39,7 +66,11 @@ export function ModelSelector({
           className,
         )}
       >
-        <Button variant="outline" className="md:px-2 md:h-[34px]">
+        <Button
+          variant="outline"
+          className="md:px-2 md:h-[34px]"
+          disabled={disabled}
+        >
           {selectedChatModel?.name}
           <ChevronDownIcon />
         </Button>

@@ -1,15 +1,14 @@
 import { createOpenAI, openai} from '@ai-sdk/openai';
-import { fireworks } from '@ai-sdk/fireworks';
+import { RestUtils } from '@/utils/environment';
+import { References } from '@/utils/references';
 import {
   customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
 } from 'ai';
 
 export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';
 
 const copilot = createOpenAI({
-  baseURL: process.env.ETENDO_BASE_URL
+  baseURL: process.env.ETENDO_URL_COPILOT + '/openai/v1'
 })
 
 export const myProvider = customProvider({
@@ -50,3 +49,13 @@ export const chatModels: Array<ChatModel> = [
   },
 ];
 
+export async function fetchChatModelsFromBackend() {
+  const requestOptions = {
+    method: 'GET',
+  };
+  const response = await RestUtils.fetch(References.url.GET_ASSISTANTS, requestOptions);
+  if (!response.ok) {
+    throw new Error('Failed to fetch models');
+  }
+  return response.json();
+}

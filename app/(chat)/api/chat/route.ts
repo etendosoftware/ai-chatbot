@@ -15,7 +15,7 @@ import {
   saveMessages,
 } from '@/lib/db/queries';
 import {
-  generateUUID,
+  generateShortUUID,
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from '@/lib/utils';
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   }
 
   await saveMessages({
-    messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
+    messages: [{ ...userMessage, createdAt: new Date(), chatId: id, id: userMessage.id, role: userMessage.role?.toUpperCase() }],
   });
 
   return createDataStreamResponse({
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
                 'requestSuggestions',
               ],
         experimental_transform: smoothStream({ chunking: 'word' }),
-        experimental_generateMessageId: generateUUID,
+        experimental_generateMessageId: generateShortUUID,
         tools: {
           getWeather,
           createDocument: createDocument({ session, dataStream }),
@@ -95,18 +95,16 @@ export async function POST(request: Request) {
               });
 
               await saveMessages({
-                messages: sanitizedResponseMessages.map((message) => {
-                  return {
-                    id: message.id,
-                    chatId: id,
-                    role: message.role,
-                    content: message.content,
-                    createdAt: new Date(),
-                  };
-                }),
+                messages: sanitizedResponseMessages.map((message) => ({
+                  id: message.id?.length > 32 ? generateShortUUID() : message.id || generateShortUUID(),
+                  chatId: id,
+                  role: message.role.toUpperCase(), // Convertir a mayúsculas directamente
+                  content: message.content,
+                  createdAt: new Date(),
+                })),
               });
             } catch (error) {
-              console.error('Failed to save chat');
+              console.error('Failed to save chat:', error);
             }
           }
         },
@@ -121,7 +119,7 @@ export async function POST(request: Request) {
       });
     },
     onError: () => {
-      return 'Oops, an error occured!';
+      return 'Oops, an error occurred!';
     },
   });
 }
