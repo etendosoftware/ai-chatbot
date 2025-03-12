@@ -7,8 +7,8 @@ import { createUser, getUser } from '@/lib/db/queries';
 import { signIn } from './auth';
 
 const authFormSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().min(1, 'Email is required'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 export interface LoginActionState {
@@ -24,6 +24,28 @@ export const login = async (
       email: formData.get('email'),
       password: formData.get('password'),
     });
+
+    const response = await fetch(process.env.ETENDO_LOGIN_URL as string, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: validatedData.email,
+        password: validatedData.password,
+      }),
+    });
+
+    if (!response.ok) {
+      return { status: 'failed' };
+    }
+
+    const data = await response.json();
+    const token = data.token;
+
+    if (!token) {
+      return { status: 'failed' };
+    }
 
     await signIn('credentials', {
       email: validatedData.email,

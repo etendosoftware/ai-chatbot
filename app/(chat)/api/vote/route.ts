@@ -41,7 +41,7 @@ export async function PATCH(request: Request) {
   await voteMessage({
     chatId,
     messageId,
-    type: type,
+    type: type === 'up' ? 'Y' : 'N',
   });
 
   return new Response('Message voted', { status: 200 });
