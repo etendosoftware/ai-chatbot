@@ -112,7 +112,7 @@ export const document = pgTable('etcop_document', {
   createdAt: timestamp('created').notNull().defaultNow(),
   title: text('title').notNull(),
   content: text('content'),
-  kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet'] })
+  kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet'] })
   .notNull()
   .default('text'),
   userId: varchar('ad_user_id', { length: 32 })

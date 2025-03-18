@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: myProvider.languageModel(selectedChatModel),
+        model: myProvider.languageModel('chat-model-large'),
         system: systemPrompt({ selectedChatModel }),
         messages,
         maxSteps: 5,
@@ -118,7 +118,8 @@ export async function POST(request: Request) {
         sendReasoning: true,
       });
     },
-    onError: () => {
+    onError: (e) => {
+      console.error('Error in POST /api/chat:', e);
       return 'Oops, an error occurred!';
     },
   });
