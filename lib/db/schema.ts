@@ -8,7 +8,7 @@ import {
   primaryKey,
   boolean,
 } from 'drizzle-orm/pg-core';
-import { getUuid } from '../utils';
+import {generateShortUUID, getUuid} from '../utils';
 
 export const user = pgTable('ad_user', {
   id: varchar('ad_user_id', { length: 32 }).primaryKey().notNull().default(getUuid()),
@@ -40,7 +40,7 @@ export const user = pgTable('ad_user', {
 export type User = InferSelectModel<typeof user>;
 
 export const chat = pgTable('etcop_conversation', {
-  id: varchar('etcop_conversation_id', { length: 32 }).primaryKey().notNull().default(getUuid()),
+  id: varchar('etcop_conversation_id', { length: 32 }).primaryKey().notNull().default(generateShortUUID()),
   createdAt: timestamp('created').notNull().defaultNow(),
   title: text('title').notNull(),
   userId: varchar('ad_user_id', { length: 32 })
@@ -61,7 +61,7 @@ export const chat = pgTable('etcop_conversation', {
 export type Chat = InferSelectModel<typeof chat>;
 
 export const message = pgTable('etcop_message', {
-  id: varchar('etcop_message_id', { length: 32 }).primaryKey().notNull().default(getUuid()),
+  id: varchar('etcop_message_id', { length: 32 }).primaryKey().notNull().default(generateShortUUID()),
   chatId: varchar('etcop_conversation_id', { length: 32 })
     .notNull()
     .references(() => chat.id),
@@ -84,7 +84,7 @@ export type Message = InferSelectModel<typeof message>;
 export const vote = pgTable(
   'etcop_vote',
   {
-    id: varchar('etcop_vote_id', { length: 32 }).primaryKey().notNull().default(getUuid()),
+    id: varchar('etcop_vote_id', { length: 32 }).primaryKey().notNull().default(generateShortUUID()),
     chatId: varchar('etcop_conversation_id', { length: 32 })
       .notNull()
       .references(() => chat.id),
@@ -108,7 +108,7 @@ export const vote = pgTable(
 export type Vote = InferSelectModel<typeof vote>;
 
 export const document = pgTable('etcop_document', {
-  id: varchar('etcop_document_id', { length: 32 }).primaryKey().notNull().default(getUuid()),
+  id: varchar('etcop_document_id', { length: 32 }).primaryKey().notNull().default(generateShortUUID()),
   createdAt: timestamp('created').notNull().defaultNow(),
   title: text('title').notNull(),
   content: text('content'),
@@ -128,7 +128,7 @@ export const document = pgTable('etcop_document', {
 export type Document = InferSelectModel<typeof document>;
 
 export const suggestion = pgTable('etcop_suggestion', {
-  id: varchar('etcop_suggestion_id', { length: 32 }).primaryKey().notNull().default(getUuid()),
+  id: varchar('etcop_suggestion_id', { length: 32 }).primaryKey().notNull().default(generateShortUUID()),
   documentId: varchar('etcop_document_id', { length: 32 }).notNull().references(() => document.id),
   documentCreatedAt: timestamp('created').notNull().defaultNow(),
   originalText: text('original_text').notNull(),

@@ -25,6 +25,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
+import { DataGrid } from "@/components/data-grid";
+import { LineChart } from "@/components/line-chart";
 
 const PurePreviewMessage = ({
   chatId,
@@ -68,7 +70,7 @@ const PurePreviewMessage = ({
             },
           )}
         >
-          {displayRole === 'assistant' && (
+          {displayRole.toLowerCase() === 'assistant' && (
             <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
@@ -168,6 +170,10 @@ const PurePreviewMessage = ({
                             result={result}
                             isReadonly={isReadonly}
                           />
+                        ) : toolName === 'dataGrid' ? (
+                          <DataGrid args={args} />
+                        ) : toolName === 'lineChart' ? (
+                          <LineChart args={args} />
                         ) : (
                           <pre>{JSON.stringify(result, null, 2)}</pre>
                         )}
@@ -197,6 +203,10 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'dataGrid' ? (
+                        <DataGrid args={args} />
+                      ) : toolName === 'lineChart' ? (
+                        <LineChart args={args} />
                       ) : null}
                     </div>
                   );

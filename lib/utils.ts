@@ -46,11 +46,7 @@ export function getLocalStorage(key: string) {
 }
 
 export function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  return generateShortUUID()
 }
 
 function addToolMessageToChat({
@@ -155,7 +151,7 @@ export function sanitizeResponseMessages({
   }
 
   const messagesBySanitizedContent = messages.map((message) => {
-    if (message.role !== 'assistant') return message;
+    if (message.role.toLowerCase() !== 'assistant') return message;
 
     if (typeof message.content === 'string') return message;
 
@@ -185,7 +181,7 @@ export function sanitizeResponseMessages({
 
 export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   const messagesBySanitizedToolInvocations = messages.map((message) => {
-    if (message.role !== 'assistant') return message;
+    if (message.role.toLowerCase() !== 'assistant') return message;
 
     if (!message.toolInvocations) return message;
 
@@ -232,11 +228,11 @@ export function getDocumentTimestampByIndex(
 }
 
 export function getUuid() {
-  return sql`public.get_uuid()`;
+  return generateShortUUID();
 }
 
 export function generateShortUUID() {
-  return crypto.randomUUID().replace(/-/g, '');
+  return crypto.randomUUID().replace(/-/g, '').toUpperCase();
 }
 
 export function decodeJwt(token: string) {
