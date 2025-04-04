@@ -6,7 +6,7 @@ export const References = {
         POST: 'POST',
     },
     url: {
-        COPILOT: 'copilot',
+        COPILOT: 'sws/copilot',
         UPLOAD_FILE: 'file',
         GET_LABELS: 'labels',
         SEND_QUESTION: 'question',

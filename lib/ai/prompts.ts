@@ -29,6 +29,10 @@ This is a guide for using blocks tools: \`createDocument\` and \`updateDocument\
 - Immediately after creating a document
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
+
+This is a guide for using lineChart tool and dataGrid tool:
+*lineChart* is used to visualize data in a line chart format, while *dataGrid* is used to display data in a tabular format. Both tools are designed to enhance the user experience by providing visual representations of data.
+
 `;
 
 export const regularPrompt =

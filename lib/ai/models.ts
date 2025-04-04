@@ -14,8 +14,8 @@ const copilot = createOpenAI({
 export const myProvider = customProvider({
   languageModels: {
     'chat-model-small': copilot('o3-mini'),
-    'chat-model-large': openai('gpt-4o'),
-    'chat-model-reasoning': openai('o3-mini'),
+    'chat-model-large': copilot('gpt-4o'),
+    'chat-model-reasoning': copilot('o3-mini'),
     'title-model': openai('gpt-4-turbo'),
     'block-model': openai('gpt-4o-mini'),
   },

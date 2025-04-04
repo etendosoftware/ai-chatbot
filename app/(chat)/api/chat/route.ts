@@ -25,6 +25,8 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { dataGrid } from "@/lib/ai/tools/data-grid";
+import { lineChart } from "@/lib/ai/tools/line-chart";
 
 export const maxDuration = 60;
 
@@ -62,7 +64,7 @@ export async function POST(request: Request) {
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: myProvider.languageModel(selectedChatModel),
+        model: myProvider.languageModel('chat-model-large'),
         system: systemPrompt({ selectedChatModel }),
         messages,
         maxSteps: 5,
@@ -74,6 +76,8 @@ export async function POST(request: Request) {
                 'createDocument',
                 'updateDocument',
                 'requestSuggestions',
+                'dataGrid',
+                'lineChart'
               ],
         experimental_transform: smoothStream({ chunking: 'word' }),
         experimental_generateMessageId: generateShortUUID,
@@ -85,6 +89,8 @@ export async function POST(request: Request) {
             session,
             dataStream,
           }),
+          dataGrid,
+          lineChart
         },
         onFinish: async ({ response, reasoning }) => {
           if (session.user?.id) {
@@ -98,7 +104,7 @@ export async function POST(request: Request) {
                 messages: sanitizedResponseMessages.map((message) => ({
                   id: message.id?.length > 32 ? generateShortUUID() : message.id || generateShortUUID(),
                   chatId: id,
-                  role: message.role.toUpperCase(), // Convertir a mayúsculas directamente
+                  role: message.role.toUpperCase(),
                   content: message.content,
                   createdAt: new Date(),
                 })),
@@ -118,7 +124,8 @@ export async function POST(request: Request) {
         sendReasoning: true,
       });
     },
-    onError: () => {
+    onError: (e) => {
+      console.error('Error in POST /api/chat:', e);
       return 'Oops, an error occurred!';
     },
   });

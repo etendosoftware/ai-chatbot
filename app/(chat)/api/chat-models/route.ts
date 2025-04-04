@@ -9,13 +9,15 @@ export async function GET(request: Request) {
   }
 
   const url = `${process.env.ETENDO_URL}/${References.url.COPILOT}/${References.url.GET_ASSISTANTS}`;
+  console.log('Fetching chat models from:', url);
   const options: RequestInit = {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic ' + btoa('admin:admin'),
+      'Authorization': 'Bearer ' + process.env.NEXT_PUBLIC_ACCESS_TOKEN,
     },
   };
+  console.log('Request options:', options);
 
   try {
     const response = await fetch(url, options);
