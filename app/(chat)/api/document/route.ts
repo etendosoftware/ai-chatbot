@@ -62,6 +62,10 @@ export async function POST(request: Request) {
       title,
       kind,
       userId: session.user.id,
+      clientId: session.user.clientId ?? '',
+      orgId: session.user.orgId ?? '',
+      createdBy: session.user.createdBy ?? '',
+      updatedBy: session.user.id,
     });
 
     return Response.json(document, { status: 200 });

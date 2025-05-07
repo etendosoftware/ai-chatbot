@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Session } from 'next-auth';
-import { DataStreamWriter, streamObject, tool } from 'ai';
+import { DataStreamWriter, JSONValue, streamObject, tool } from 'ai';
 import { getDocumentById, saveSuggestions } from '@/lib/db/queries';
 import { Suggestion } from '@/lib/db/schema';
 import { generateUUID } from '@/lib/utils';
@@ -56,12 +56,18 @@ export const requestSuggestions = ({
           id: generateUUID(),
           documentId: documentId,
           isResolved: false,
+          clientId: session?.user.clientId ?? '',
+          orgId: session?.user.orgId ?? '',
+          isActive: 'Y',
+          createdBy: session?.user.id ?? '',
+          updated: new Date(),
+          updatedBy: session?.user.id ?? '',
         };
 
         dataStream.writeData({
           type: 'suggestion',
           content: suggestion,
-        });
+        } as unknown as JSONValue);
 
         suggestions.push(suggestion);
       }

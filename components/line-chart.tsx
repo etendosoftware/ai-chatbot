@@ -43,7 +43,6 @@ const groupDataForChart = (data: any[] | undefined, groupField: string, groupCri
 
   // Preparar etiquetas y datos para Chart.js
   let labels = Object.keys(groupedData);
-  let data_;
 
   if (groupField === 'orderDate') {
     // Ordenar cronológicamente si es orderDate
@@ -53,7 +52,7 @@ const groupDataForChart = (data: any[] | undefined, groupField: string, groupCri
       } else {
         const [monthA, yearA] = a.split(' ');
         const [monthB, yearB] = b.split(' ');
-        return new Date(`${monthA} 1, ${yearA}`) - new Date(`${monthB} 1, ${yearB}`);
+        return new Date(`${monthA} 1, ${yearA}`).getTime() - new Date(`${monthB} 1, ${yearB}`).getTime();
       }
     });
   } else {
@@ -62,6 +61,7 @@ const groupDataForChart = (data: any[] | undefined, groupField: string, groupCri
   }
 
   // Extraer los valores según el método de agregación
+  let data_;
   if (aggregationMethod === 'sum') {
     data_ = labels.map(label => groupedData[label].value);
   } else {
@@ -94,7 +94,16 @@ export const LineChart = ({
 
   const [dat, setDat] = useState<any[]>();
   const [cols, setCols] = useState<any[]>([]);
-  const [dataset, setDataset] = useState({labels: [], datasets: []});
+  const [dataset, setDataset] = useState<{
+    labels: string[];
+    datasets: {
+      label: string;
+      data: any[];
+      borderColor: string;
+      backgroundColor: string;
+      borderWidth: number;
+    }[];
+  }>({labels: [], datasets: []});
 
   useEffect(() => {
     ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);

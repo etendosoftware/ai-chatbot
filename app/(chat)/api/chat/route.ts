@@ -58,7 +58,20 @@ export async function POST(request: Request) {
   }
 
   await saveMessages({
-    messages: [{ ...userMessage, createdAt: new Date(), chatId: id, id: userMessage.id, role: userMessage.role?.toUpperCase() }],
+    messages: [{
+      ...userMessage, 
+      createdAt: new Date(), 
+      chatId: id, 
+      id: userMessage.id, 
+      role: userMessage.role?.toUpperCase(),
+      clientId: session.user.clientId ?? '',
+      orgId: session.user.orgId ?? '',
+      isActive: 'Y',
+      createdBy: session.user.id,
+      updated: new Date(),
+      updatedBy: session.user.id,
+      visibility: "private",
+    }],
   });
 
   return createDataStreamResponse({
@@ -107,6 +120,13 @@ export async function POST(request: Request) {
                   role: message.role.toUpperCase(),
                   content: message.content,
                   createdAt: new Date(),
+                  clientId: session.user.clientId ?? '',
+                  orgId: session.user.orgId ?? '',
+                  isActive: 'Y',
+                  createdBy: session.user.id as string,
+                  updated: new Date(),
+                  updatedBy: session.user.id as string,
+                  visibility: "private",
                 })),
               });
             } catch (error) {

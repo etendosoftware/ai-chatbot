@@ -1,8 +1,5 @@
-import { compare } from 'bcrypt-ts';
 import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-
-import { getUser } from '@/lib/db/queries';
 
 import { authConfig } from './auth.config';
 import { decodeJwt } from '@/lib/utils';
@@ -58,7 +55,7 @@ export const {
             orgId: decodedToken.organization,
             createdBy: decodedToken.user,
             updatedBy: decodedToken.user,
-          } as User;
+          };
         } catch (error) {
           return null;
         }
@@ -79,16 +76,16 @@ export const {
       }
       return token;
     },
-    async session({ session, token }: { session: ExtendedSession; token: any }) {
-      if (session.user && token.id) {
-        session.user.id = token.id;
-        session.user.jwt = token.jwt;
-        session.user.email = token.email;
+    async session({ session, token }) {
+      if (token && token.id) {
+        session.user.id = token.id as string;
+        session.user.jwt = token.jwt as string;
+        session.user.email = token.email ?? '';
         session.user.name = token.name;
-        session.user.clientId = token.clientId;
-        session.user.orgId = token.orgId;
-        session.user.createdBy = token.createdBy;
-        session.user.updatedBy = token.updatedBy;
+        session.user.clientId = token.clientId as string;
+        session.user.orgId = token.orgId as string;
+        session.user.createdBy = token.createdBy as string;
+        session.user.updatedBy = token.updatedBy as string;
       }
       return session;
     },

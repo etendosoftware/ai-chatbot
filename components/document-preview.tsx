@@ -94,6 +94,12 @@ export function DocumentPreview({
           id: block.documentId,
           createdAt: new Date(),
           userId: 'noop',
+          clientId: '',
+          orgId: '',
+          isActive: 'Y',
+          createdBy: '',
+          updated: new Date(),
+          updatedBy: '',
         }
       : null;
 

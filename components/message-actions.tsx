@@ -58,7 +58,7 @@ export function PureMessageActions({
           <TooltipTrigger asChild>
             <Button
               className="py-1 px-2 h-fit text-muted-foreground !pointer-events-auto"
-              disabled={vote?.isUpvoted}
+              disabled={vote?.isUpvoted === 'Y'}
               variant="outline"
               onClick={async () => {
                 const upvote = fetch('/api/vote', {
@@ -73,9 +73,9 @@ export function PureMessageActions({
                 toast.promise(upvote, {
                   loading: 'Upvoting Response...',
                   success: () => {
-                    mutate<Array<Vote>>(
+                    mutate(
                       `/api/vote?chatId=${chatId}`,
-                      (currentVotes) => {
+                      (currentVotes: Vote[] | undefined) => {
                         if (!currentVotes) return [];
 
                         const votesWithoutCurrent = currentVotes.filter(
@@ -87,8 +87,8 @@ export function PureMessageActions({
                           {
                             chatId,
                             messageId: message.id,
-                            isUpvoted: true,
-                          },
+                            isUpvoted: 'Y',
+                          } as Vote,
                         ];
                       },
                       { revalidate: false },
@@ -125,9 +125,9 @@ export function PureMessageActions({
                 toast.promise(downvote, {
                   loading: 'Downvoting Response...',
                   success: () => {
-                    mutate<Array<Vote>>(
+                    mutate(
                       `/api/vote?chatId=${chatId}`,
-                      (currentVotes) => {
+                      (currentVotes: Vote[] | undefined) => {
                         if (!currentVotes) return [];
 
                         const votesWithoutCurrent = currentVotes.filter(
@@ -139,8 +139,8 @@ export function PureMessageActions({
                           {
                             chatId,
                             messageId: message.id,
-                            isUpvoted: false,
-                          },
+                            isUpvoted: 'N',
+                          } as Vote,
                         ];
                       },
                       { revalidate: false },

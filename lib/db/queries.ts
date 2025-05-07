@@ -248,12 +248,20 @@ export async function saveDocument({
   kind,
   content,
   userId,
+  clientId,
+  orgId,
+  createdBy,
+  updatedBy
 }: {
   id: string;
   title: string;
   kind: BlockKind;
   content: string;
   userId: string;
+  clientId: string;
+  orgId: string;
+  createdBy: string;
+  updatedBy: string;
 }) {
   try {
     return await db.insert(document).values({
@@ -263,6 +271,11 @@ export async function saveDocument({
       content,
       userId,
       createdAt: new Date(),
+      isActive: 'Y',
+      clientId,
+      orgId,
+      createdBy,
+      updated: new Date(),
     });
   } catch (error) {
     console.error('Failed to save document in database');

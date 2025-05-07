@@ -58,6 +58,10 @@ export function createDocumentHandler<T extends BlockKind>(config: {
           content: draftContent,
           kind: config.kind,
           userId: args.session.user.id,
+          clientId: args.session.user.clientId ?? '',
+          orgId: args.session.user.orgId ?? '',
+          createdBy: args.session.user.createdBy ?? '',
+          updatedBy: args.session.user.id,
         });
       }
 
@@ -78,6 +82,10 @@ export function createDocumentHandler<T extends BlockKind>(config: {
           content: draftContent,
           kind: config.kind,
           userId: args.session.user.id,
+          clientId: args.session.user.clientId ?? '',
+          orgId: args.session.user.orgId ?? '',
+          createdBy: args.session.user.createdBy ?? '',
+          updatedBy: args.session.user.id,
         });
       }
 
